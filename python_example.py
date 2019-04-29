@@ -46,7 +46,14 @@ japi.QueryTradeEvent += JAPI_Eventhandler.QueryTrade
 japi.AccountDataEvent += JAPI_Eventhandler.AccountData
 japi.PositionEvent += JAPI_Eventhandler.Position
 japi.EquityEvent += JAPI_Eventhandler.Equity
-
+japi.SeaTradeEvent += JAPI_Eventhandler.SeaTrade
+japi.SeaReportEvent += JAPI_Eventhandler.SeaReport
+japi.SeaQueryTradeEvent += JAPI_Eventhandler.QuerySeaTrade
+japi.SeaQueryReportEvent += JAPI_Eventhandler.QuerySeaReport
+japi.OptionGroupEvent += JAPI_Eventhandler.OptionGroup
+japi.OptionDisGroupEvent += JAPI_Eventhandler.OptionDisGroup
+japi.OptionDisAllGroupEvent += JAPI_Eventhandler.OptionDisAllGroup
+japi.OptionAllGroupTrialEvent += JAPI_Eventhandler.OptionAllGroupTrial
 fu = JAPI_Fuction(japi)
 #--------------------------------------------------
 #login
@@ -61,4 +68,34 @@ fu.cancel_order(ibno, acc, bs, clientOrder, symbolflag, orderip, order_no, symbo
 fu.query_internal_report(ibno, acc)
 #Query domestic trade report
 fu.query_internal_trade(ibno, acc)
+#Foreign order
+exchange = "4"
+fu.seaorder(ibno, acc, symbol, bs, clientOrder, symbolflag, orderip, price, qty, exchange)
+#Cancel foreign order
+fu.seacancel_order(ibno, acc, clientOrder, orderip, order_no)
+#Query foreign order report
+fu.query_foreign_report(ibno, acc)
+#Query foreign trade report
+fu.query_foreign_trade(ibno, acc)
+#Group Option-----------------------------------
+#The Symbol you want to merge
+symbol1 = ""
+#The Symbol's Buy or Sell
+bs1 = ""
+#The second Symbol you want to merge
+symbol2 = ""
+#The second Symbol's Buy or Sell
+bs2 = ""
+fu.option_group(ibno, acc, PASS, symbol1, bs1, symbol2, bs2, qty, clientOrder)
+#DisGroup Option
+#The Symbol you want to separate
+symbol = ""
+#The Symbol's Buy or Sell
+bs = ""
+fu.option_dis_group(ibno, acc, PASS, symbol, bs, qty, clientOrder)
+#DisAllGroup Option
+#Separate All Symbol you have
+fu.option_disall_group(ibno, acc, PASS, clientOrder)
+#Option Trial
+fu.option_allgroup_trial(ibno, acc, clientOrder)
 fu.logout()
