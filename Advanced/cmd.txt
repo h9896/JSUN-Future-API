@@ -1,0 +1,2 @@
+order,Your IB Number,Your Account,1,TXF.1912,1,11100,1
+queryposition,Your IB Number,Your Account

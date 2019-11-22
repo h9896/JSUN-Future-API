@@ -30,7 +30,11 @@ def setting(path):
                     Event_path = col_val[1]
                 elif col_val[0] == "Order_path":
                     Order_path = col_val[1]
-        return ID, PASS, IPSERVER, IbNo, Account, DLL_Path, Event_path, Order_path
+                elif col_val[0] == "R_path":
+                    R_path = col_val[1]
+                elif col_val[0] == "T_path":
+                    T_path = col_val[1]
+        return ID, PASS, IPSERVER, IbNo, Account, DLL_Path, Event_path, Order_path, R_path, T_path
     except OSError as err:
         print("OS error: {0}".format(err))
     except ValueError:
@@ -41,24 +45,25 @@ def setting(path):
         print("Unexpected error line: {0}\n".format(sys.exc_info()[2].tb_lineno))
         raise
 
-def loadDll(dll_path, event_path):
+def loadDll(dll_path, event_path, r_path, t_path):
     try:
         clr.AddReference(dll_path)
         from Jsunfutures import API
         os.chdir(event_path)
         from JAPI_Event import JAPI_Eventhandler, JAPI_Fuction
         japi = API()
-        japi.LoginStatusEvent += JAPI_Eventhandler.LoginStatus
-        japi.TradeConnStatusEvent += JAPI_Eventhandler.TradeConnStatus
-        japi.QueryConnStatusEvent += JAPI_Eventhandler.QueryConnStatus
-        japi.ErrorEvent += JAPI_Eventhandler.Error
-        japi.ReportEvent += JAPI_Eventhandler.Report
-        japi.TradeEvent += JAPI_Eventhandler.Trade
-        japi.QueryReportEvent += JAPI_Eventhandler.QueryReport
-        japi.QueryTradeEvent += JAPI_Eventhandler.QueryTrade
-        japi.AccountDataEvent += JAPI_Eventhandler.AccountData
-        japi.PositionEvent += JAPI_Eventhandler.Position
-        japi.EquityEvent += JAPI_Eventhandler.Equity
+        J_Event = JAPI_Eventhandler(r_path, t_path)
+        japi.LoginStatusEvent += J_Event.LoginStatus
+        japi.TradeConnStatusEvent += J_Event.TradeConnStatus
+        japi.QueryConnStatusEvent += J_Event.QueryConnStatus
+        japi.ErrorEvent += J_Event.Error
+        japi.ReportEvent += J_Event.Report
+        japi.TradeEvent += J_Event.Trade
+        japi.QueryReportEvent += J_Event.QueryReport
+        japi.QueryTradeEvent += J_Event.QueryTrade
+        japi.AccountDataEvent += J_Event.AccountData
+        japi.PositionEvent += J_Event.Position
+        japi.EquityEvent += J_Event.Equity
         return JAPI_Fuction(japi)
     except OSError as err:
         print("OS error: {0}".format(err))
@@ -71,13 +76,11 @@ def loadDll(dll_path, event_path):
         raise
 
 class ApiFunc(object):
-    def __init__(self, api, ibno, acc):
+    def __init__(self, api):
         self.api = api
-        self.ibno = ibno
-        self.acc = acc
-    def orderfunc(self, symbolflag, symbol, bs, price, qty):
+    def orderfunc(self, ibno, acc, symbolflag, symbol, bs, price, qty):
         clientOrder = datetime.now().strftime('%H%M%S')
-        self.api.order(self.ibno, self.acc, symbol, bs, clientOrder, symbolflag, None, price, qty)
+        self.api.order(ibno, acc, symbol, bs, clientOrder, symbolflag, None, price, qty)
     def loginfunc(self, ID, PASS, IPSERVER):
         self.api.login(ID, PASS, IPSERVER)
         i = 0
@@ -91,12 +94,16 @@ class ApiFunc(object):
                 self.api.login(ID, PASS, IPSERVER)
             time.sleep(3)
             i += 1
-    def logoutfunc(self):
-        self.api.logout()
+    def cancelfunc(self, ibno, acc, bs, symbolflag, order_no, symbol):
+        clientOrder = datetime.now().strftime('%H%M%S')
+        self.api.cancel_order(ibno, acc, bs, clientOrder, symbolflag, None, order_no, symbol)
+    def queryPositionfunc(self, ibno, acc):
+        clientOrder = datetime.now().strftime('%H%M%S')
+        self.api.query_internal_position(ibno, acc, None, clientOrder = datetime.now().strftime('%H%M%S'))
 def main():
-    ID, PASS, IPSERVER, IbNo, Account, DLL_Path, Event_path, Order_path = setting("D:\\www\\setting.cfg")
+    ID, PASS, IPSERVER, IbNo, Account, DLL_Path, Event_path, Order_path, R_path, T_path = setting("setting.cfg")
     print("set ok!")
-    jsf = ApiFunc(loadDll(DLL_Path,Event_path), IbNo, Account)
+    jsf = ApiFunc(loadDll(DLL_Path,Event_path, R_path, T_path))
     print("load ok!")
     if jsf.loginfunc(ID, PASS, IPSERVER):
         ordfile = open(Order_path, 'r')
@@ -105,11 +112,18 @@ def main():
             if updateTime != os.stat(Order_path).st_mtime:
                 line = ordfile.readline()
                 print(line)
-                if "Exit Now" not in line:
-                    if ',' in line:
-                        symbolflag, symbol, bs, price, qty = line.split(',')
-                        jsf.orderfunc(symbolflag, symbol, bs, price, qty)
-                else:
+                line = line.replace('\n','')
+                cmd = line.split(',')
+                if cmd[0].upper() == "ORDER":
+                    jsf.orderfunc(cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6], cmd[7])
+                elif cmd[0].upper() == "QUERYPOSITION":
+                    jsf.queryPositionfunc(cmd[1], cmd[2])
+                elif cmd[0].upper() == "QUERYREPORT":
+                    jsf.api.query_internal_report(cmd[1], cmd[2])
+                elif cmd[0].upper() == "CANCEL":
+                    jsf.cancelfunc(cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6])
+                elif cmd[0].upper() == "LOGOUT":
+                    jsf.api.logout()
                     break
                 updateTime = os.stat(Order_path).st_mtime
             time.sleep(0.1)

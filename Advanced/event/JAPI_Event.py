@@ -1,22 +1,42 @@
-class JAPI_Eventhandler():
-    def LoginStatus(msgcode, msg):
+import os
+from datetime import datetime
+class JAPI_Eventhandler(object):
+    def __init__(self, ReportPath, TradePath):
+        self.ReportPath = ReportPath
+        if not os.path.isfile(ReportPath):
+            name_list ="Ibno, Account, AfterQty, BS, ClientOrdNo, ErrMsg, ErrorCode, Exchange, ExchangeRate, ExchangeServerReveiveTime, Marketflag, \
+            MatchQty, Orderfunc, OrderIP, OrderNo, PositionEffect, Price, Priceflag, QTY, SubAccount, Symbol, Tif, TradeServerReceiveTime, TimePeriod"
+            with open(ReportPath, 'a') as f:
+                f.write(name_list+'\n')
+        self.TradePath = TradePath
+        if not os.path.isfile(TradePath):
+            name_list ="Ibno, Account, BS, BS1, BS2, ClientOrderNo, DealTime, Exchange, ExchangeRate, Marketflag, OrderIP, OrderNo, \
+            PositionEffect, Price, Price1, Price2, Qty, Qty1, Qty2, SubAccount, Symbol, Symbol1, Symbol2, Tif, tradeNo, TimePeriod"
+            with open(TradePath, 'a') as f:
+                f.write(name_list+'\n')
+    def LoginStatus(self,msgcode, msg):
         print(msgcode + ":" + msg)
-    def TradeConnStatus(msgcode, msg):
+    def TradeConnStatus(self,msgcode, msg):
         print(msgcode + ":" + msg)
-    def QueryConnStatus(msgcode, msg):
+    def QueryConnStatus(self,msgcode, msg):
         print(msgcode + ":" + msg)
-    def Error(msgcode, msg, clientOrderNo):
+    def Error(self,msgcode, msg, clientOrderNo):
         print(msgcode + ": " + msg + ", -->> " + clientOrderNo)
 
-    def Report(*argv):
+    def Report(self, *argv):
         name_list = ['Ibno', 'Account', 'AfterQty', 'BS', 'ClientOrdNo', 'ErrMsg', 'ErrorCode', 'Exchange', 'ExchangeRate', 'ExchangeServerReveiveTime', 'Marketflag', \
             'MatchQty', 'Orderfunc', 'OrderIP', 'OrderNo', 'PositionEffect', 'Price', 'Priceflag', 'QTY', 'SubAccount', 'Symbol', 'Tif', 'TradeServerReceiveTime', 'TimePeriod']
         data_list=[]
+        str = ""
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def Trade(*argv):
+            str = str + ", {0}".format(data_list[i])
+        str = str[2:] + "\n"
+        with open(self.ReportPath, 'a') as f:
+                f.write(str)
+    def Trade(self,*argv):
         name_list = ['Ibno', 'Account', 'BS', 'BS1', 'BS2', 'ClientOrderNo', 'DealTime', 'Exchange', 'ExchangeRate', 'Marketflag', 'OrderIP', 'OrderNo', \
             'PositionEffect', 'Price', 'Price1', 'Price2', 'Qty', 'Qty1', 'Qty2', 'SubAccount', 'Symbol', 'Symbol1', 'Symbol2', 'Tif', 'tradeNo', 'TimePeriod']
         data_list=[]
@@ -25,7 +45,7 @@ class JAPI_Eventhandler():
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
 
-    def QueryReport(*argv):
+    def QueryReport(self,*argv):
         name_list = ['Ibno', 'Account', 'AfterQty', 'BS', 'ClientOrdNo', 'ErrMsg', 'ErrorCode', 'Exchange', 'ExchangeRate', 'ExchangeServerReveiveTime', \
             'Marketflag', 'MatchQty', 'Orderfunc', 'OrderIP', 'OrderNo', 'PositionEffect', 'Price', 'Priceflag', 'QTY', 'SubAccount', 'Symbol', 'Tif', \
             'TradeServerReceiveTime', 'TimePeriod']
@@ -35,7 +55,7 @@ class JAPI_Eventhandler():
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
 
-    def QueryTrade(*argv):
+    def QueryTrade(self,*argv):
         name_list = [ 'Ibno', 'Account', 'BS', 'BS1', 'BS2', 'ClientOrderNo', 'DealTime', 'Exchange', 'ExchangeRate', 'Marketflag', 'OrderIP', 'OrderNo', 'PositionEffect', \
             'Price', 'Price1', 'Price2', 'Priceflag', 'Qty', 'Qty1', 'Qty2', 'SubAccount', 'Symbol', 'Symbol1', 'Symbol2', 'Tif', 'tradeNo', 'TimePeriod']
         data_list=[]
@@ -44,13 +64,13 @@ class JAPI_Eventhandler():
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
 
-    def AccountData(Market, ibno, Account, subAccount = None):
+    def AccountData(self,Market, ibno, Account, subAccount = None):
         if (subAccount == None):
             print(Market + ":[" + ibno + "-" + Account + "]")
         else:
             print(Market + ":[" + ibno + "-" + Account + "-" + subAccount + "]")
 
-    def Position(*argv):
+    def Position(self,*argv):
         if (argv[-1] == "N"):
             print("無部位資料")
         else:
@@ -62,7 +82,7 @@ class JAPI_Eventhandler():
             for i in range(len(name_list)):
                 print("{0} : {1}".format(name_list[i], data_list[i]))
 
-    def Equity(*argv):
+    def Equity(self,*argv):
         name_list = [ "分公司", "帳號", "子帳號", "序號", "維持率", "帳戶權益", "今日存提款", "可用餘額", "平倉損益", "原始保証金", "維持保証金", "浮動損益", \
             "帳戶餘額", "權利金收入與支出", "預扣權利金", "買方市值", "賣方市值", "前日權益", "前日帳戶餘額", "今日總手續費", "今日總交易稅", "權益總值", \
             "風險指標(總權益維持率)", "浮動報酬率", "足額原始保証金", "足額維持保証金", "足額可用餘額", "足額維持率", "足額總權益維持率", "當沖未平倉註記", \
@@ -75,7 +95,7 @@ class JAPI_Eventhandler():
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
 
-    def SeaReport(*argv):
+    def SeaReport(self,*argv):
         name_list = ['Ibno', 'Account', 'AfterQty', 'BeforeQty', 'BS', 'ClientOrdNo', 'ErrMsg', 'ErrorCode', 'Exchange', 'ExchangeRate', 'ExchangeServerReveiveTime', \
             'ExchangeServerReveiveTimeUTC', 'Marketflag', 'MatchQty', 'Orderfunc', 'OrderIP', 'OrderNo', 'PositionEffect', 'Price', 'PriceFraction', 'Priceflag', \
             'QTY', 'SubAccount', 'Symbol', 'Tif', 'TradeServerReceiveTime', 'TradeServerReceiveTimeUTC', 'StopPrice', 'StopPriceFraction', 'Ftf', 'GtdExpireday', \
@@ -86,7 +106,7 @@ class JAPI_Eventhandler():
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
 
-    def SeaTrade(*argv):
+    def SeaTrade(self,*argv):
         name_list = ['Ibno', 'Account', 'BS', 'BS1', 'BS2', 'ClientOrderNo', 'DealTime', 'DealTimeUTC', 'Exchange', 'ExchangeRate', 'Marketflag', 'OrderIP', 'OrderNo', \
             'PositionEffect', 'Price', 'Price1', 'Price2', 'Qty', 'Qty1', 'Qty2', 'SubAccount', 'Symbol', 'Symbol1', 'Symbol2', 'Tif', 'tradeNo', 'PriceFraction']
         data_list=[]
@@ -95,7 +115,7 @@ class JAPI_Eventhandler():
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
 
-    def QuerySeaReport(*argv):
+    def QuerySeaReport(self,*argv):
         name_list = ['Ibno', 'Account', 'AfterQty', 'BeforeQty', 'BS', 'ClientOrdNo', 'ErrMsg', 'ErrorCode', 'Exchange', 'ExchangeRate', 'ExchangeServerReveiveTime', \
             'ExchangeServerReveiveTimeUTC', 'Marketflag', 'MatchQty', 'Orderfunc', 'OrderIP', 'OrderNo', 'PositionEffect', 'Price', 'PriceFraction', 'Priceflag', 'QTY', \
             'SubAccount', 'Symbol', 'Tif', 'TradeServerReceiveTime', 'TradeServerReceiveTimeUTC', 'StopPrice', 'StopPriceFraction', 'Ftf', 'GtdExpireday', 'MiniQty', 'Scf']
@@ -105,7 +125,7 @@ class JAPI_Eventhandler():
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
 
-    def QuerySeaTrade(*argv):
+    def QuerySeaTrade(self,*argv):
         name_list = [ 'Ibno', 'Account', 'BS', 'BS1', 'BS2', 'ClientOrderNo', 'DealTime', 'DealTimeUTC', 'Exchange', 'ExchangeRate', 'Marketflag', 'OrderIP', 'OrderNo', \
             'PositionEffect', 'Price', 'Price1', 'Price2', 'Qty', 'Qty1', 'Qty2', 'SubAccount', 'Symbol', 'Symbol1', 'Symbol2', 'Tif', 'tradeNo', 'PriceFraction']
         data_list=[]
@@ -113,28 +133,28 @@ class JAPI_Eventhandler():
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def OptionGroup(*argv):
+    def OptionGroup(self,*argv):
         name_list = [ 'QueryFlag', 'Status', 'ErrorMessage', 'ClientOrderNo']
         data_list=[]
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def OptionDisGroup(*argv):
+    def OptionDisGroup(self,*argv):
         name_list = [ 'QueryFlag', 'Status', 'ErrorMessage', 'ClientOrderNo']
         data_list=[]
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def OptionDisAllGroup(*argv):
+    def OptionDisAllGroup(self,*argv):
         name_list = [ 'QueryFlag', 'Status', 'ErrorMessage', 'ClientOrderNo']
         data_list=[]
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def OptionAllGroupTrial(*argv):
+    def OptionAllGroupTrial(self,*argv):
         name_list = ['QueryFlag', 'Ibno', 'Account', 'BS1', 'Symbol1', 'BS2', 'Symbol2', 'Qty', 'SpreadInitialMargin', 'SpreadMaintainMargin', 'Status', \
             'SumMarginReduceCurrency', 'SumInitialMarginReduce', 'SumMaintainMarginReduce', 'clientno']
         data_list=[]
@@ -142,49 +162,49 @@ class JAPI_Eventhandler():
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def Withdraw(*argv):
+    def Withdraw(self,*argv):
         name_list = ["QueryFlag", "Status", "ErrorMessage"]
         data_list=[]
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def WithdrawInquire(*argv):
+    def WithdrawInquire(self,*argv):
         name_list = ["QueryFlag", "Date", "Time", "TXCode", "Amount", "CancelFlag", "BankID", "BankNo", "str", "seq"]
         data_list=[]
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def CancelWithdraw (*argv):
+    def CancelWithdraw (self,*argv):
         name_list = ["QueryFlag", "Status", "ErrorMessage"]
         data_list=[]
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def CancelInquire (*argv):
+    def CancelInquire (self,*argv):
         name_list = ["QueryFlag", "CancelFlag", "Date", "Time", "Amount", "Account", "seqno", "str"]
         data_list=[]
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def Tranfer (*argv):
+    def Tranfer (self,*argv):
         name_list = ["QueryFlag", "Status", "ErrorMessage"]
         data_list=[]
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def TranferInquire (*argv):
+    def TranferInquire (self,*argv):
         name_list = ["QueryFlag", "TransferFlag", "Account", "Date", "Time", "BankID", "BankNo", "Amount", "Currency", "Status", "Seqno", "str"]
         data_list=[]
         for i in argv:
             data_list.append(i)
         for i in range(len(name_list)):
             print("{0} : {1}".format(name_list[i], data_list[i]))
-    def SeaCancelInquire (*argv):
+    def SeaCancelInquire (self,*argv):
         name_list = ["QueryFlag", "TransferFlag", "Account", "Date", "Time", "BankID", "BankNo", "Amount", "Currency", "Status", "Seqno", "str"]
         data_list=[]
         for i in argv:
@@ -251,9 +271,9 @@ class JAPI_Fuction(object):
     def query_margin_transfer(self, ibno, acc, setCurrency, fromDate, toDate):
         self.api.QueryMarginTransfer (ibno, acc, setCurrency, fromDate, toDate)
     def query_internal_position(self, ibno, acc, subAccount = None, clientOrder = None):
-        self.api.QueryPosition("2", ibno, acc, subAccount, clientOrder)
+        self.api.QueryPOSITIONS("2", ibno, acc, subAccount, clientOrder)
     def query_foreign_position(self, ibno, acc, subAccount = None, clientOrder = None):
-        self.api.QueryPosition("5", ibno, acc, subAccount, clientOrder)
+        self.api.QueryPOSITIONS("5", ibno, acc, subAccount, clientOrder)
     def query_internal_equilty(self, ibno, acc, subAccount = None, clientOrder = None):
         self.api.QueryEquilty("2", ibno, acc, subAccount, clientOrder)
     def query_foreign_equilty(self, ibno, acc, subAccount = None, clientOrder = None):
